@@ -1,0 +1,114 @@
+---
+title: "Clustering Evangelicals"
+author: "Ryan Burge"
+date: "April 9, 2016"
+output: html_document
+---
+gss <- read.dta("D:/reltrad.dta", convert.factors = FALSE)
+gss <- subset(gss, year >= 2010)
+evan <-subset(gss, evangelical == 1)
+library(car)
+evan$literal <- recode(evan$literal, "1=1; else=0")
+evan$attnd <- evan$attend/8
+evan$attnd[is.na(evan$attnd)] <-0
+evan$male <- evan$sex
+evan$male <- recode(evan$male, "1=1; else=0")
+
+evan$atheist <- evan$spkath
+evan$atheist <- recode(evan$atheist, "1=1; 2=0; else=0")
+evan$atheist2 <- evan$colath
+evan$atheist2 <- recode(evan$atheist2, "4=1; 5=0; else=0")
+evan$atheist3 <- evan$libath
+evan$atheist3 <- recode(evan$atheist3, "2=1; 1=0; else=0")
+evan$racist <- evan$spkrac
+evan$racist <- recode(evan$racist, "1=1; 2=0; else=0")
+evan$racist2 <- evan$colrac
+evan$racist2 <- recode(evan$racist2, "4=1; 5=0; else=0")
+evan$racist3 <- evan$librac
+evan$racist3 <- recode(evan$racist3, "2=1; 1=0; else=0")
+evan$mili <- evan$spkmil
+evan$mili <- recode(evan$mili, "1=1; 2=0; else=0")
+evan$mili2 <- evan$colmil
+evan$mili2 <- recode(evan$mili2, "4=1; 5=0; else=0")
+evan$mili3 <- evan$libmil
+evan$mili3 <- recode(evan$mili3, "2=1; 1=0; else=0")
+evan$comm <- evan$spkcom
+evan$comm <- recode(evan$comm, "1=1; 2=0; else=0")
+evan$comm2 <- evan$colcom
+evan$comm2 <- recode(evan$comm2, "5=1; 4=0; else=0")
+evan$comm3 <- evan$libcom
+evan$comm3 <- recode(evan$comm3, "2=1; 1=0; else=0")
+evan$homo <- evan$spkhomo
+evan$homo <- recode(evan$homo, "1=1; 2=0; else=0")
+evan$homo2 <- evan$colhomo
+evan$homo2 <- recode(evan$homo2, "4=1; 5=0; else=0")
+evan$homo3 <- evan$libhomo
+evan$homo3 <- recode(evan$homo3, "2=1; 1=0; else=0")
+evan$tolerance <- evan$atheist + evan$atheist2 + evan$atheist3 + evan$racist + evan$racist2 + evan$racist3 + evan$comm + evan$comm2 + evan$comm3 + evan$mili + evan$mili2 + evan$mili3 + evan$homo + evan$homo2 + evan$homo3
+evan$tolerance <- evan$tolerance/15
+
+evan$abortion <- evan$abany
+evan$abortion <- recode(evan$abortion, "1=1; else=0")
+evan$gaymarriage <- evan$marhomo
+evan$gaymarriage <- recode(evan$gaymarriage, "1=1; 2=1; else=0")
+evan$gaysex <- evan$homosex
+evan$gaysex <- recode(evan$gaysex, "4=1; else=0")
+evan$repubid <- evan$partyid
+evan$repubid <- recode(evan$repubid, "0=1; 1=2; 2=3; 3=4; 4=5; 5=6; 6=7; 7=0; 8=0; 9=0")
+evan$repubid[is.na(evan$repubid)] <-0
+evan$welfare <- evan$natfare
+evan$welfare <- recode(evan$welfare, "8=0; 9=0")
+evan$welfare[is.na(evan$welfare)] <-0
+evan$welfare <- evan$welfare/3
+evan$military <- evan$natarmsy
+evan$military <- recode(evan$military, "8=0; 9=0")
+evan$military[is.na(evan$military)] <-0
+evan$military <- evan$military/3
+test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military)
+
+test <- test[-c(1213, 113, 1295), ]
+
+wss <- (nrow(test)-1)*sum(apply(test,2,var))
+for (i in 2:15) wss[i] <- sum(kmeans(test,
+centers=i,iter.max=1000,algorithm="MacQueen")$withinss)
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+ylab="Within groups sum of squares")k<-kmeans(test, centers=3,iter.max=1000,algorithm="MacQueen")
+k$size
+k$centers
+aggregate(test,by=list(cluster=k$cluster), FUN=mean)
+library("fpc")
+dp = discrproj(test, k$cluster)
+test$clustname<-k$cluster
+test$clustname<-factor(test$clustname)
+ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
+ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("Countys won by Hillary Clinton against Bernie Sanders in each Cluster")
+agg <- aggregate(test,by=list(cluster=k$cluster), FUN=mean)
+ggplot(agg, aes(x = literal, y = cluster, color = cluster)) +
+geom_point() + facet_wrap(~ Year, ncol = 1)
+agg <- aggregate(test,by=list(cluster=k$cluster), FUN=mean)
+agg
+newdata <- agg[order(agg$age),]
+newdata[2,1] <-2
+newdata[3,1] <-3
+newdata[1,1] <- 1
+sd(newdata$literal)/sqrt(577)
+sd(newdata$literal)/sqrt(574)
+sd(newdata$literal)/sqrt(418)
+newdata$selit <- c(0.001659253, 0.001663583, 0.001949451)
+
+newdata$litlower <- newdata$literal-newdata$selit
+newdata$lithigher <- newdata$literal+newdata$selit
+
+newdata$factor <- c("30s", "50s" , "70s")
+
+ag <- ggplot(newdata, aes(x=literal, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = litlower, xmax=lithigher))
+
+ag + theme(axis.title.y=element_blank(),
+axis.text.y=element_blank(),
+axis.ticks=element_blank() ) +
+labs(x="Biblical Literalism") +  theme(legend.title=element_blank())
+
+
+
+
+
