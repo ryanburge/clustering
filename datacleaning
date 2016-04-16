@@ -50,7 +50,7 @@ evan$tolerance <- evan$tolerance/15
 evan$abortion <- evan$abany
 evan$abortion <- recode(evan$abortion, "1=1; else=0")
 evan$gaymarriage <- evan$marhomo
-evan$gaymarriage <- recode(evan$gaymarriage, "1=1; 2=1; else=0")
+evan$gaymarriage <- recode(evan$gaymarriage, "1=1; else=0")
 evan$gaysex <- evan$homosex
 evan$gaysex <- recode(evan$gaysex, "4=1; else=0")
 evan$repubid <- evan$partyid
