@@ -64,7 +64,14 @@ evan$military <- evan$natarmsy
 evan$military <- recode(evan$military, "8=0; 9=0")
 evan$military[is.na(evan$military)] <-0
 evan$military <- evan$military/3
-test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military)
+evan2$environment <- evan$natenviy
+evan$environment <- evan$natenviy
+evan$environment <- recode(evan$environment, "1=3; 3=1; 2=2; else=0")
+evan$environment <- evan$environment/3
+evan$drugs <- evan$natdrug
+evan$drugs <- recode(evan$drugs, "1=3; 3=1; 2=2; else=0")
+evan$drugs <- evan$drugs/3
+test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military, environment, drugs)
 
 test <- test[-c(1213, 113, 1295), ]
 
