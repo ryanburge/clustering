@@ -12,8 +12,6 @@ k$centers
 aggregate(test,by=list(cluster=k$cluster), FUN=mean)
 
 
-
-
 dp = discrproj(test, k$cluster)
 test$clustname<-k$cluster
 test$clustname<-factor(test$clustname)
