@@ -12,7 +12,8 @@ ag <- ggplot(literal, aes(x=m_lit, y=cluster, colour=factor)) + geom_point() + g
 
 ag <- ggplot(newdata, aes(x=literal, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = litlower, xmax=lithigher))
 
+
 ag + theme(axis.title.y=element_blank(),
-           axis.text.y=element_blank(),
-           axis.ticks=element_blank() ) +
-  labs(x="Biblical Literalism") +  theme(legend.title=element_blank(), reverse = TRUE)
+           +            axis.text.y=element_blank(),
+           +            axis.ticks=element_blank() ) +
+  +     labs(x="Biblical Literalism") +  theme(legend.title=element_blank()) + geom_vline(xintercept = .323, linetype = "longdash")
