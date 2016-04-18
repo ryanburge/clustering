@@ -4,10 +4,19 @@ author: "Ryan Burge"
 date: "April 9, 2016"
 output: html_document
 ---
+library(foreign)
+library(car)
+library(dplyr)
+library(rpart)
+library(fpc)
+library(ggplot2)
+
+
 gss <- read.dta("D:/reltrad.dta", convert.factors = FALSE)
 gss <- subset(gss, year >= 2010)
 evan <-subset(gss, evangelical == 1)
-library(car)
+
+evan$literal <- evan$bible
 evan$literal <- recode(evan$literal, "1=1; else=0")
 evan$attnd <- evan$attend/8
 evan$attnd[is.na(evan$attnd)] <-0
@@ -64,56 +73,29 @@ evan$military <- evan$natarmsy
 evan$military <- recode(evan$military, "8=0; 9=0")
 evan$military[is.na(evan$military)] <-0
 evan$military <- evan$military/3
-evan2$environment <- evan$natenviy
+evan$environment <- evan$natenviy
 evan$environment <- evan$natenviy
 evan$environment <- recode(evan$environment, "1=3; 3=1; 2=2; else=0")
 evan$environment <- evan$environment/3
 evan$drugs <- evan$natdrug
 evan$drugs <- recode(evan$drugs, "1=3; 3=1; 2=2; else=0")
 evan$drugs <- evan$drugs/3
-test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military, environment, drugs)
+test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military, environment, drugs, educ)
 
-test <- test[-c(1213, 113, 1295), ]
+age_fit <- rpart(age ~ educ + attnd + male + tolerance + abortion + gaymarriage + gaysex + repubid + welfare + military + environment + drugs, data = test[!is.na(test$age), ],
+method = 'anova')
+test$age[is.na(test$age)] <- predict(age_fit, test[is.na(test$age), ])
 
-wss <- (nrow(test)-1)*sum(apply(test,2,var))
-for (i in 2:15) wss[i] <- sum(kmeans(test,
-centers=i,iter.max=1000,algorithm="MacQueen")$withinss)
-plot(1:15, wss, type="b", xlab="Number of Clusters",
-ylab="Within groups sum of squares")k<-kmeans(test, centers=3,iter.max=1000,algorithm="MacQueen")
-k$size
-k$centers
-aggregate(test,by=list(cluster=k$cluster), FUN=mean)
-library("fpc")
-dp = discrproj(test, k$cluster)
-test$clustname<-k$cluster
-test$clustname<-factor(test$clustname)
-ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
-ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("Countys won by Hillary Clinton against Bernie Sanders in each Cluster")
-agg <- aggregate(test,by=list(cluster=k$cluster), FUN=mean)
-ggplot(agg, aes(x = literal, y = cluster, color = cluster)) +
-geom_point() + facet_wrap(~ Year, ncol = 1)
-agg <- aggregate(test,by=list(cluster=k$cluster), FUN=mean)
-agg
-newdata <- agg[order(agg$age),]
-newdata[2,1] <-2
-newdata[3,1] <-3
-newdata[1,1] <- 1
-sd(newdata$literal)/sqrt(577)
-sd(newdata$literal)/sqrt(574)
-sd(newdata$literal)/sqrt(418)
-newdata$selit <- c(0.001659253, 0.001663583, 0.001949451)
+educ_fit <- rpart(educ ~ age + attnd + male + tolerance + abortion + gaymarriage + gaysex + repubid + welfare + military + environment + drugs, data = test[!is.na(test$age), ],
+method = 'anova')
 
-newdata$litlower <- newdata$literal-newdata$selit
-newdata$lithigher <- newdata$literal+newdata$selit
+test$educ[is.na(test$educ)] <- predict(educ_fit, test[is.na(test$educ), ])
 
-newdata$factor <- c("30s", "50s" , "70s")
 
-ag <- ggplot(newdata, aes(x=literal, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = litlower, xmax=lithigher))
 
-ag + theme(axis.title.y=element_blank(),
-axis.text.y=element_blank(),
-axis.ticks=element_blank() ) +
-labs(x="Biblical Literalism") +  theme(legend.title=element_blank())
+
+
+
 
 
 
