@@ -97,13 +97,29 @@ gss$tolerance <- gss$tolerance/15
 
 evan$abortion <- evan$abany
 evan$abortion <- recode(evan$abortion, "1=1; else=0")
+gss$abortion <- gss$abany
+gss$abortion <- recode(gss$abortion, "1=1; else=0")
+
 evan$gaymarriage <- evan$marhomo
 evan$gaymarriage <- recode(evan$gaymarriage, "1=1; else=0")
+gss$gaymarriage <- gss$marhomo
+gss$gaymarriage <- recode(gss$gaymarriage, "1=1; else=0")
+
 evan$gaysex <- evan$homosex
 evan$gaysex <- recode(evan$gaysex, "4=1; else=0")
+
+gss$gaysex <- gss$homosex
+gss$gaysex <- recode(gss$gaysex, "4=1; else=0")
+
+
 evan$repubid <- evan$partyid
 evan$repubid <- recode(evan$repubid, "0=1; 1=2; 2=3; 3=4; 4=5; 5=6; 6=7; 7=0; 8=0; 9=0")
 evan$repubid[is.na(evan$repubid)] <-0
+
+gss$repubid <- gss$partyid
+gss$repubid <- recode(gss$repubid, "0=1; 1=2; 2=3; 3=4; 4=5; 5=6; 6=7; 7=0; 8=0; 9=0")
+gss$repubid[is.na(gss$repubid)] <-0
+
 evan$welfare <- evan$natfare
 evan$welfare <- recode(evan$welfare, "8=0; 9=0")
 evan$welfare[is.na(evan$welfare)] <-0
@@ -119,6 +135,25 @@ evan$environment <- evan$environment/3
 evan$drugs <- evan$natdrug
 evan$drugs <- recode(evan$drugs, "1=3; 3=1; 2=2; else=0")
 evan$drugs <- evan$drugs/3
+
+gss$welfare <- gss$natfare
+gss$welfare <- recode(gss$welfare, "8=0; 9=0")
+gss$welfare[is.na(gss$welfare)] <-0
+gss$welfare <- gss$welfare/3
+gss$military <- gss$natarmsy
+gss$military <- recode(gss$military, "8=0; 9=0")
+gss$military[is.na(gss$military)] <-0
+gss$military <- gss$military/3
+gss$environment <- gss$natenviy
+gss$environment <- gss$natenviy
+gss$environment <- recode(gss$environment, "1=3; 3=1; 2=2; else=0")
+gss$environment <- gss$environment/3
+gss$drugs <- gss$natdrug
+gss$drugs <- recode(gss$drugs, "1=3; 3=1; 2=2; else=0")
+gss$drugs <- gss$drugs/3
+
+
+
 test <- select(evan, age, literal, attnd, male, tolerance, abortion, gaymarriage, gaysex, repubid, welfare, military, environment, drugs, educ)
 
 age_fit <- rpart(age ~ educ + attnd + male + tolerance + abortion + gaymarriage + gaysex + repubid + welfare + military + environment + drugs, data = test[!is.na(test$age), ],
