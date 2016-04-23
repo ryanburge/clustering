@@ -107,10 +107,6 @@ xprotdk[attend ==9] <- 0
 xprotdk[attend ==NA] <- 0
 xev[xprotdk ==1] <- 1
 
-*THIS IS THE CORRECTED CODING*
-  *If you are trying to update datasets that have already have reltard coding in them, use the syntax from this point forward*
-  
-  *This takes people who responded that they were Christian in the relig variable but didn't get asked the followup and puts them into reltrad*
 
 xtn <- relig
 denom2 <- denom
