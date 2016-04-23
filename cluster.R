@@ -20,7 +20,7 @@ ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(
 ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("How Is Litearlism Dispersed Through the Clusters")
 
 
-
+test$factor <- recode(test$factor, "c(1)='30s'; c(2)='50s'; c(3)= '70s'")
 
 
 
