@@ -26,7 +26,7 @@ g2 <- ggplot(attnd, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom
 g2 + theme(axis.title.y=element_blank(),
            axis.text.y=element_blank(),
            axis.ticks=element_blank() ) +
-  labs(x="Biblical Literalism") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$attnd), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+  labs(x="Church Attendance") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$attnd), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
 
 CI(test[test$clustname==1,"tolerance"])
 CI(test[test$clustname==2,"tolerance"])
