@@ -10,9 +10,12 @@ library(rpart)
 library(fpc)
 library(ggplot2)
 <<<<<<< HEAD
-library(Rmisc)
-library(extrafont)
-library(extrafontdb)
+library(foreign)
+library(car)
+library(dplyr)
+library(rpart)
+library(fpc)
+library(ggplot2)
 =======
 >>>>>>> be73b91505807ddac73728c93e2b591a39e781ee
 
