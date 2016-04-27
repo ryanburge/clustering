@@ -20,6 +20,8 @@ CI(test[test$clustname==1,"attnd"])
 CI(test[test$clustname==2,"attnd"])
 CI(test[test$clustname==3,"attnd"])
 
+
+
 g2 <- ggplot(attnd, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = lo, xmax=hi), height =0)
 
 
