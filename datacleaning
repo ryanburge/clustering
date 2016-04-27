@@ -9,15 +9,12 @@ library(dplyr)
 library(rpart)
 library(fpc)
 library(ggplot2)
-<<<<<<< HEAD
 library(foreign)
 library(car)
 library(dplyr)
 library(rpart)
 library(fpc)
 library(ggplot2)
-=======
->>>>>>> be73b91505807ddac73728c93e2b591a39e781ee
 
 
 gss <- read.dta("D:/reltrad.dta", convert.factors = FALSE)
@@ -165,7 +162,6 @@ test$age[is.na(test$age)] <- predict(age_fit, test[is.na(test$age), ])
 
 educ_fit <- rpart(educ ~ age + attnd + male + tolerance + abortion + gaymarriage + gaysex + repubid + welfare + military + environment + drugs, data = test[!is.na(test$age), ],
 method = 'anova')
-
 test$educ[is.na(test$educ)] <- predict(educ_fit, test[is.na(test$educ), ])
 
 
