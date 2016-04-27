@@ -6,11 +6,6 @@ output: html_document
 ---
 
 ```{r message=FALSE, warning=FALSE}
-library(foreign)
-library(car)
-library(dplyr)
-library(rpart)
-library(fpc)
 library(ggplot2)
 library(foreign)
 library(car)
@@ -18,12 +13,16 @@ library(dplyr)
 library(rpart)
 library(fpc)
 library(ggplot2)
+library(Rmisc)
+library(extrafont)
+library(extrafontdb)
 ```
 
-## Are evangelicals are a monolith? 
+# Are evangelicals are a monolith? 
 
 A lot of outsiders have begun to wonder if evangelicals are truly a monolithic bloc or are there some cracks beginning to form in what we believe an evangelical to be. I wanted to take a look at that by using a technique that is helps to sort a group into similar cases, also known as a cluster. These clusters are created using an algorithm and will help to divide evangelicals up into camps. 
 
+## Data Cleaning
 ```{r message=FALSE, warning=FALSE}
 gss <- read.dta("D:/reltrad.dta", convert.factors = FALSE)
 gss <- subset(gss, year >= 2010)
@@ -35,8 +34,12 @@ The first thing I have done is used the RELTRAD coding scheme employed by Steens
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 evan$literal <- evan$bible
 evan$literal <- recode(evan$literal, "1=1; else=0")
+gss$literal <- gss$bible
+gss$literal <- recode(gss$literal, "1=1; else=0")
 evan$attnd <- evan$attend/8
 evan$attnd[is.na(evan$attnd)] <-0
+gss$attnd <- gss$attend/8
+gss$attnd[is.na(gss$attnd)] <-0
 evan$male <- evan$sex
 evan$male <- recode(evan$male, "1=1; else=0")
 
@@ -182,10 +185,12 @@ educ_fit <- rpart(educ ~ age + attnd + male + tolerance + abortion + gaymarriage
 method = 'anova')
 test$educ[is.na(test$educ)] <- predict(educ_fit, test[is.na(test$educ), ])
 ```
+## Clustering 
 
 Now, it's time to run the clustering. But how many clusters should I use? 
 
 ```{r message=FALSE, warning=FALSE}
+set.seed(555)
 wss <- (nrow(test)-1)*sum(apply(test,2,var))
 for (i in 2:15) wss[i] <- sum(kmeans(test,
                                      centers=i,iter.max=1000,algorithm="MacQueen")$withinss)
@@ -202,13 +207,198 @@ k$size
 k$centers
 ```
 
-So, we have three decently sized centers. Cluster 1 has 577. Cluster 2 has 637. Cluster 358. That's sufficient. And we can see that the clusters have broken down really nicely into three age brackets with Cluster 1 having the average age of 32, Cluster 2's average is 53, and Cluster 3 is 73. Let's visualize those. 
+So, we have three decently sized centers. That's one of the advantages of MacQueen clustering. And we can see that the clusters have broken down really nicely into three age brackets with one clustere having the average age of 32, another having the average age of 53, and the third cluster is 73. Let's visualize those. 
 
 ```{r message=FALSE, warning=FALSE}
 dp = discrproj(test, k$cluster)
 test$clustname<-k$cluster
 test$clustname<-factor(test$clustname)
-ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
+ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$clustname)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
 
-ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("How Is Litearlism Dispersed Through the Clusters")
+ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("How Is Literalism Dispersed Through the Clusters")
 ```
+
+These visuals do look really nice, but because I am clustering on so many factors a two dimensional plot doesn't really convey how the clusters actually look. We can tell that they are logically distributed across the x axis, however. 
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+test$factor <- recode(test$clustname, "c(1)='30s'; c(2)='50s'; c(3)= '70s'")
+```
+## Results
+
+Let's start visualizing our results. I want to be able to tell two things. 
+
+1. Are evangelicals alike? Do each of the three clusters have the same opinions on government? Church attendance? The Bible? 
+2. How different are evangelicals than the general population? 
+
+**Here's how to read the charts. A dot represents the mean for each group. The lines extending out each side of the dot are the 95% confidence intervals. If the lines for a cluster overlap the lines for another cluster then we cannot say that they have statistically different opinions on the subject.** 
+
+**The vertical dashed line you will see in the following graphs represents the mean of the entire GSS sample, not just evangelicals.** 
+
+### Religious Behavior
+
+Let's take a look at two religious behaviors. Believing in a literal Bible and church attendance. 
+
+```{r message=FALSE, warning=FALSE, echo = FALSE, include=FALSE}
+CI(test[test$clustname==1,"literal"])
+CI(test[test$clustname==2,"literal"])
+CI(test[test$clustname==3,"literal"])
+```
+
+```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
+literal <- read.csv("D:/clustering/literal.csv")
+
+literal$factor <- c("30s", "50s" , "70s")
+
+
+g1 <- ggplot(literal, aes(x=m_lit, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = lo_lit, xmax=hi_lit), height=0)
+
+
+g1 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Biblical Literalism") + xlim(.3,.7) + theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$literal), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+
+attnd <- read.csv("D:/clustering/attnd.csv")
+
+attnd$factor <- c("30s", "50s" , "70s")
+
+g2 <- ggplot(attnd, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = lo, xmax=hi), height =0)
+
+
+g2 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Church Attendance") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$attnd), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+```
+
+There are no surprises here. Evangelicals are much more likely to believe in a literal Bible and although the youngest cluster in the analysis is less likely to belive that the Bible is literally true, each of the clusters is not statistically distinct. The same is true of church attendance. No matter the age, evangelicals attend church at basically the same rate. Which is much more frequently than the general populace. 
+
+### Tolerance
+```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
+tolerance <- read.csv("D:/clustering/tolerance.csv")
+
+tolerance$factor <- c("30s", "50s" , "70s")
+
+g3 <- ggplot(tolerance, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = lo, xmax=hi), height =0)
+
+
+g3 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Tolerance") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$tolerance), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+```
+
+Now this is an intersting finding. The three clusters are distinct in the area of political tolerance. The older cluster is statistically less tolerant than the other two. Even more interesting is that the youngest cluster of evangelicals is not statistically more or less tolerant than the overall sample in the GSS. Maybe there are some differences forming here. 
+
+### Social Issues
+```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
+
+abortion <- read.csv("D:/clustering/abortion.csv")
+
+abortion$factor <- c("30s", "50s" , "70s")
+
+g4 <- ggplot(abortion, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = abortion$lo, xmax=abortion$hi), height =0)
+
+
+g4 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Abortion Under Any Circumstance") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$abortion), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+
+gaymarriage <- read.csv("D:/clustering/gaymarriage.csv")
+
+gaymarriage$factor <- c("30s", "50s" , "70s")
+
+
+g5 <- ggplot(gaymarriage, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = gaymarriage$lo, xmax=gaymarriage$hi), height =0)
+
+
+g5 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Gay Marriage (Strongly Agree) ") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$gaymarriage), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+
+gaysex<- read.csv("D:/clustering/gaysex.csv")
+
+gaysex$factor <- c("30s", "50s" , "70s")
+
+g6 <- ggplot(gaysex, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = gaysex$lo, xmax=gaysex$hi), height =0)
+
+
+g6 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Homosexual Sex (Not Wrong at All) ") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$gaysex), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+```
+
+On the issue of abortion, evangelicals are united and distinct from the average American. The mean of no cluster is higher than 18% in favor of abortion under any circumstance. On the issue of gay marriage a similar pattern emerges. Evangeilcals are opposed to gay marriage and are far away from the average American. However, there is a small (but important) distinction on the issue of homosexual sex. The youngest cluster is more likely to say that homosexual is "not wrong at all" and this is statistically distinct from both other clusters. 
+
+### Party Affiliation
+```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
+repubid<- read.csv("D:/clustering/repubid.csv")
+
+repubid$factor <- c("30s", "50s" , "70s")
+
+g7 <- ggplot(repubid, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = repubid$lo, xmax=repubid$hi), height =0)
+
+
+g7 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Republican Party Identification") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$repubid), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+```
+According to these findings, evangelicals are pretty cohesive on their party affiliation. None of the clusters are ideologically distinct. However, they is a great distance between evangelical's ideology and everyone else's. According to these findings an evangelical is 10% more Republican than the average American. 
+
+### Spending Issues
+
+```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
+
+welfare<- read.csv("D:/clustering/welfare.csv")
+
+welfare$factor <- c("30s", "50s" , "70s")
+
+g8 <- ggplot(welfare, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = welfare$lo, xmax=welfare$hi), height =0)
+
+
+g8 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Spend More on Welfare Programs") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$welfare), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+
+environment<- read.csv("D:/clustering/environment.csv")
+
+environment$factor <- c("30s", "50s" , "70s")
+
+
+g9 <- ggplot(environment, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = environment$lo, xmax=environment$hi), height =0)
+
+
+g9 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Spend More on Environmental Programs") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$environment), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+
+
+drugs<- read.csv("D:/clustering/drugs.csv")
+
+drugs$factor <- c("30s", "50s" , "70s")
+
+g10 <- ggplot(drugs, aes(x=mean, y=cluster, colour=factor)) + geom_point() + geom_errorbarh(aes(xmin = drugs$lo, xmax=drugs$hi), height =0)
+
+
+g10 + theme(axis.title.y=element_blank(),
+           axis.text.y=element_blank(),
+           axis.ticks=element_blank() ) +
+  labs(x="Spend More on Drug Programs") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$drugs), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+```
+
+A few interesting things here. On the issue of welfare spending the middle cluster (those in their 50s) are more likely to favor spending on welfare programs than both the other two clusters and the general population. That's an unusual finding. In regard to the environment, the older cluster (those in their 70's) are less likely to support spending federal money but the other two clusters have an opinion on environment funding that is not different than the general population. On drug programs evangelicals all look alike and are no different than the general population. 
+
+## Concluding Thoughts
+
+So, are evangelicals a monolith? On matters of religiosity the answer is clearly yes. They attend church frequently and they have a very high view of the bible, which makes them distinct from the general population. Younger evangelicals are as tolerant as the average American while middle aged and older evangelicals are not. On social issues the younger set is showing signs of moving toward the center on issues of homosexuality but on abortion, evangelicals are in lock step. Which is also true in regard to political party affiliation. on taxing and spending older evangelicals oppose spending to the greatest degree but there are more moderate views among the other two groups on spending on the environment. 
+
+In fact, evangelicals are distinct and different than the general population but have achieved a remarkable amount of internal coherence. 
+
+I had to supress a lot of syntax to make this more readable. For full coding syntax visit my [Github page](https://github.com/ryanburge/clustering)
+
