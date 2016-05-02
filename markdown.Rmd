@@ -2,7 +2,7 @@
 title: "Clustering Evangelicals"
 author: "Ryan Burge"
 date: "April 27, 2016"
-output: html_document
+output: md_document
 ---
 
 ```{r message=FALSE, warning=FALSE}
