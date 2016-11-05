@@ -23,8 +23,12 @@ evan <-subset(gss, evangelical == 1)
 
 evan$literal <- evan$bible
 evan$literal <- recode(evan$literal, "1=1; else=0")
+gss$literal <- gss$bible
+gss$literal <- recode(gss$literal, "1=1; else=0")
 evan$attnd <- evan$attend/8
 evan$attnd[is.na(evan$attnd)] <-0
+gss$attnd <- gss$attend/8
+gss$attnd[is.na(gss$attnd)] <-0
 evan$male <- evan$sex
 evan$male <- recode(evan$male, "1=1; else=0")
 
