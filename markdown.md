@@ -69,8 +69,9 @@ use?
     plot(1:15, wss, type="b", xlab="Number of Clusters",
          ylab="Within groups sum of squares")
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-6-1.png)  
- Using the graph it becomes apparent that the jump from 2 to 3 clusters
+![](markdown_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+
+Using the graph it becomes apparent that the jump from 2 to 3 clusters
 still gives us a good deal of utility, but that moving to four clusters
 gives us a lot less. Let's stick to three.
 
@@ -92,21 +93,31 @@ gives us a lot less. Let's stick to three.
 
 So, we have three decently sized centers. That's one of the advantages
 of MacQueen clustering. And we can see that the clusters have broken
-down really nicely into three age brackets with one clustere having the
+down really nicely into three age brackets with one cluster having the
 average age of 32, another having the average age of 53, and the third
-cluster is 73. Let's visualize those.
+cluster is 73.
+
+Before I go on, I have to note something. I know that in a typical
+clustering scenario you would want to standardize all your variables
+into a singular range, typically 0-1. However, this exercise was really
+meant to assess three generations of evangelicals and note the changes
+between those generations. Because of that the clustering is basically
+being swamped by the age variable.
+
+Let's visualize those three age clusters.
 
     dp = discrproj(test, k$cluster)
     test$clustname<-k$cluster
     test$clustname<-factor(test$clustname)
     ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$clustname)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-8-1.png)  
+![](markdown_files/figure-markdown_strict/unnamed-chunk-8-1.png)
 
     ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("How Is Literalism Dispersed Through the Clusters")
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-8-2.png)  
- These visuals do look really nice, but because I am clustering on so
+![](markdown_files/figure-markdown_strict/unnamed-chunk-8-2.png)
+
+These visuals do look really nice, but because I am clustering on so
 many factors a two dimensional plot doesn't really convey how the
 clusters actually look. We can tell that they are logically distributed
 across the x axis, however.
@@ -122,10 +133,16 @@ things.
 2.  How different are evangelicals than the general population?
 
 **Here's how to read the charts. A dot represents the mean for each
-group. The lines extending out each side of the dot are the 95%
+group. The lines extending out each side of the dot are the 84%\*
 confidence intervals. If the lines for a cluster overlap the lines for
 another cluster then we cannot say that they have statistically
 different opinions on the subject.**
+
+\*The 84% confidence interval for comparing means has become the
+standard measure for this application. While in other instances we rely
+on 95% CIs, recent writing in statistical theory have concluded that the
+95% threshold is much too conservative. To read more [click
+here.](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC524673/)
 
 **The vertical dashed line you will see in the following graphs
 represents the mean of the entire GSS sample, not just evangelicals.**
@@ -135,8 +152,9 @@ represents the mean of the entire GSS sample, not just evangelicals.**
 Let's take a look at two religious behaviors. Believing in a literal
 Bible and church attendance.
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-11-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-11-2.png)  
- There are no surprises here. Evangelicals are much more likely to
+![](markdown_files/figure-markdown_strict/unnamed-chunk-11-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-11-2.png)
+
+There are no surprises here. Evangelicals are much more likely to
 believe in a literal Bible and although the youngest cluster in the
 analysis is less likely to belive that the Bible is literally true, each
 of the clusters is not statistically distinct. The same is true of
@@ -146,8 +164,9 @@ populace.
 
 ### Tolerance
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-12-1.png)  
- Now this is an intersting finding. The three clusters are distinct in
+![](markdown_files/figure-markdown_strict/unnamed-chunk-12-1.png)
+
+Now this is an intersting finding. The three clusters are distinct in
 the area of political tolerance. The older cluster is statistically less
 tolerant than the other two. Even more interesting is that the youngest
 cluster of evangelicals is not statistically more or less tolerant than
@@ -156,8 +175,9 @@ here.
 
 ### Social Issues
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-13-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-13-2.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-13-3.png)  
- On the issue of abortion, evangelicals are united and distinct from the
+![](markdown_files/figure-markdown_strict/unnamed-chunk-13-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-13-2.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-13-3.png)
+
+On the issue of abortion, evangelicals are united and distinct from the
 average American. The mean of no cluster is higher than 18% in favor of
 abortion under any circumstance. On the issue of gay marriage a similar
 pattern emerges. Evangeilcals are opposed to gay marriage and are far
@@ -168,7 +188,7 @@ this is statistically distinct from both other clusters.
 
 ### Party Affiliation
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-14-1.png)  
+![](markdown_files/figure-markdown_strict/unnamed-chunk-14-1.png)
 According to these findings, evangelicals are pretty cohesive on their
 party affiliation. None of the clusters are ideologically distinct.
 However, they is a great distance between evangelical's ideology and
@@ -177,8 +197,9 @@ Republican than the average American.
 
 ### Spending Issues
 
-![](markdown_files/figure-markdown_strict/unnamed-chunk-15-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-15-2.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-15-3.png)  
- A few interesting things here. On the issue of welfare spending the
+![](markdown_files/figure-markdown_strict/unnamed-chunk-15-1.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-15-2.png)![](markdown_files/figure-markdown_strict/unnamed-chunk-15-3.png)
+
+A few interesting things here. On the issue of welfare spending the
 middle cluster (those in their 50s) are more likely to favor spending on
 welfare programs than both the other two clusters and the general
 population. That's an unusual finding. In regard to the environment, the

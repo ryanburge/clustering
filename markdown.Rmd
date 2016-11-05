@@ -2,7 +2,7 @@
 title: "Clustering Evangelicals"
 author: "Ryan Burge"
 date: "April 27, 2016"
-output: md_document
+output: html_document
 ---
 
 ```{r message=FALSE, warning=FALSE}
@@ -207,7 +207,11 @@ k$size
 k$centers
 ```
 
-So, we have three decently sized centers. That's one of the advantages of MacQueen clustering. And we can see that the clusters have broken down really nicely into three age brackets with one clustere having the average age of 32, another having the average age of 53, and the third cluster is 73. Let's visualize those. 
+So, we have three decently sized centers. That's one of the advantages of MacQueen clustering. And we can see that the clusters have broken down really nicely into three age brackets with one cluster having the average age of 32, another having the average age of 53, and the third cluster is 73.
+
+Before I go on, I have to note something. I know that in a typical clustering scenario you would want to standardize all your variables into a singular range, typically 0-1. However, this exercise was really meant to assess three generations of evangelicals and note the changes between those generations. Because of that the clustering is basically being swamped by the age variable.
+
+Let's visualize those three age clusters.  
 
 ```{r message=FALSE, warning=FALSE}
 dp = discrproj(test, k$cluster)
@@ -230,7 +234,9 @@ Let's start visualizing our results. I want to be able to tell two things.
 1. Are evangelicals alike? Do each of the three clusters have the same opinions on government? Church attendance? The Bible? 
 2. How different are evangelicals than the general population? 
 
-**Here's how to read the charts. A dot represents the mean for each group. The lines extending out each side of the dot are the 95% confidence intervals. If the lines for a cluster overlap the lines for another cluster then we cannot say that they have statistically different opinions on the subject.** 
+**Here's how to read the charts. A dot represents the mean for each group. The lines extending out each side of the dot are the 84%* confidence intervals. If the lines for a cluster overlap the lines for another cluster then we cannot say that they have statistically different opinions on the subject.** 
+
+*The 84% confidence interval for comparing means has become the standard measure for this application. While in other instances we rely on 95% CIs, recent writing in statistical theory have concluded that the 95% threshold is much too conservative. To read more [click here.](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC524673/) 
 
 **The vertical dashed line you will see in the following graphs represents the mean of the entire GSS sample, not just evangelicals.** 
 
@@ -256,7 +262,7 @@ g1 <- ggplot(literal, aes(x=m_lit, y=cluster, colour=factor)) + geom_point() + g
 g1 + theme(axis.title.y=element_blank(),
            axis.text.y=element_blank(),
            axis.ticks=element_blank() ) +
-  labs(x="Biblical Literalism") + xlim(.3,.7) + theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$literal), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
+  labs(x="Biblical Literalism") + theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$literal), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
 
 attnd <- read.csv("D:/clustering/attnd.csv")
 
@@ -271,7 +277,7 @@ g2 + theme(axis.title.y=element_blank(),
   labs(x="Church Attendance") +  theme(legend.title=element_blank()) + geom_vline(xintercept = mean(gss$attnd), linetype = "longdash") + theme(legend.position = "bottom") +  theme(text=element_text(size=16, family="Georgia"))
 ```
 
-There are no surprises here. Evangelicals are much more likely to believe in a literal Bible and although the youngest cluster in the analysis is less likely to belive that the Bible is literally true, each of the clusters is not statistically distinct. The same is true of church attendance. No matter the age, evangelicals attend church at basically the same rate. Which is much more frequently than the general populace. 
+There are no surprises here. Evangelicals are much more likely to believe in a literal Bible and the youngest cluster in the analysis is less likely to believe that the Bible is literally true. The same is true of church attendance. No matter the age, evangelicals attend church at basically the same rate. Which is much more frequently than the general populace. 
 
 ### Tolerance
 ```{r message=FALSE, warning=FALSE, echo = FALSE,  fig.width=12, fig.height=2.5}
