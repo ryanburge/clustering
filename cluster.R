@@ -15,7 +15,7 @@ aggregate(test,by=list(cluster=k$cluster), FUN=mean)
 dp = discrproj(test, k$cluster)
 test$clustname<-k$cluster
 test$clustname<-factor(test$clustname)
-ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(pch=19,size=2)+ggtitle("Cluster Visualization")
+ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(k$cluster)))+geom_point(pch=19,size=2)+ggtitle("Evangelical Cluster Visualization")
 
 ggplot(test, aes(dp$proj[,1], dp$proj[,2], color=factor(test$literal)))+geom_point(pch=19,size=2)+facet_grid(clustname~.)+ggtitle("How Is Litearlism Dispersed Through the Clusters")
 
